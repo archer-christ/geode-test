@@ -13,15 +13,17 @@
 	<gfe:cache properties-ref="props" />
 	<util:properties id="props" location="cache.properties"/>
 
+	<gfe:pool id="my-pool" subscription-enabled="true">
+		<gfe:locator host="172.31.4.121" port="10334"/>
+		<gfe:locator host="172.31.4.122" port="10334"/>
+	</gfe:pool>
 
-
+	<!-- GemFire transaction manager
 	<gfe-data:datasource>
 		<gfe-data:locator host="172.31.4.121" port="10334"/>
 		<gfe-data:locator host="172.31.4.122" port="10334"/>
 	</gfe-data:datasource>
-
-
-
+-->
 	<!-- GemFire transaction manager -->
 	<gfe:transaction-manager />
 	
