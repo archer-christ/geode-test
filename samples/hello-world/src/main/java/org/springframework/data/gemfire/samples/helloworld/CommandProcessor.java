@@ -206,7 +206,8 @@ public class CommandProcessor {
 						System.out.println("You have get task running. !!!");
 						return "RUNNING";
 					}
-					ATask<Void> task = new ATask<Void>(10000,new IterFunc<Void>(){
+					int num = Integer.parseInt(arg1);
+					ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
 						public Void apply(Void v, int id) {
 							region.get(""+id);
 							return null;
@@ -228,7 +229,8 @@ public class CommandProcessor {
 						System.out.println("You have PUT task running. !!!");
 						return "RUNNING";
 					}
-					ATask<Void> task = new ATask<Void>(10000,new IterFunc<Void>(){
+					int num = Integer.parseInt(arg1);
+					ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
 						public Void apply(Void v, int id) {
 							region.put("" + id, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
 							return null;

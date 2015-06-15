@@ -11,7 +11,7 @@ public  class ATask<R> implements Runnable {
     private static final Log log = LogFactory.getLog(ATask.class);
 
     volatile boolean active = false;
-    int times;
+    final int times;
     IterFunc<R> func;
     R r=null;
 
@@ -31,12 +31,12 @@ public  class ATask<R> implements Runnable {
             log.info("Start a task");
             active = true;
             R r = null;
-            long start = System.currentTimeMillis();
+            final long start = System.currentTimeMillis();
             for (int i = 0; i < times && active; i++) {
                 r = func.apply(r, i);
-                if (times % 1000 == 0) {
+                if (i % 1000 == 0) {
                     long now = System.currentTimeMillis();
-                    String info = String.format("Run %d tasks, use %d ms, %d tps", i, now-start, (times * 1000) / (now - start + 1));
+                    String info = String.format("Run %d tasks, use %d ms, %d tps", i, now-start, (i * 1000) / (now - start + 1));
                     log.info(info);
                     System.out.println(info);
                 }
