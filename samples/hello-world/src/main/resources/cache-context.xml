@@ -16,8 +16,8 @@
 
 
 	<gfe-data:datasource>
-		<locator host="172.31.4.121" port="13304"/>
-		<locator host="172.31.4.122" port="13304"/>
+		<gfe-data:locator host="172.31.4.121" port="13304"/>
+		<gfe-data:locator host="172.31.4.122" port="13304"/>
 	</gfe-data:datasource>
 
 
