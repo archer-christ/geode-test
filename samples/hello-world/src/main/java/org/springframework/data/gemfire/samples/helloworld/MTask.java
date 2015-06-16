@@ -41,9 +41,20 @@ public  class MTask<R> implements ITask  {
     }
 
     public void run() {
+        long start = System.currentTimeMillis();
         for (ATask t : tasks) {
             executor.execute(t);
         }
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        long escape  = System.currentTimeMillis() - start;
+        String info = String.format("complete %d tasks with %d thread, time escape %d ms, %d tps",
+                times, tasks.size(), escape, (times*1000)/escape);
+        System.out.println(info);
     }
 
 }
