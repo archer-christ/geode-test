@@ -19,10 +19,8 @@ package org.springframework.data.gemfire.samples.helloworld;
 import com.gemstone.gemfire.cache.Region;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -123,7 +121,7 @@ public class CommandProcessor {
 		}
 	}
 
-	HashMap<String, ATask> tasks = new HashMap<String, ATask>();
+	HashMap<String, ITask> tasks = new HashMap<String, ITask>();
 
 	String process(final String line) {
 		final Scanner sc = new Scanner(line);
@@ -137,7 +135,7 @@ public class CommandProcessor {
 
 		if ("cancel".equalsIgnoreCase(command)) {
 			if (arg1!=null) {
-				ATask task = tasks.get(arg1);
+				ITask task = tasks.get(arg1);
 				if (task!=null) {
 					tasks.remove(arg1);
 					task.cancel();
@@ -207,13 +205,21 @@ public class CommandProcessor {
 				System.out.println("You have get task running. !!!");
 				return "RUNNING";
 			}
-			int num = Integer.parseInt(arg1);
-			ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
+			ITask task;
+			IterFunc<Void> func = new IterFunc<Void>() {
 				public Void apply(Void v, int id) {
-					region.get(""+id);
+					region.get("" + id);
 					return null;
 				}
-			},null);
+			};
+
+			int num = Integer.parseInt(arg1);
+			if (arg2!=null && !arg2.isEmpty()) {
+				int split = Integer.parseInt(arg2);
+				task = new MTask<Void>(split,executor,num,func,null);
+			} else {
+				task = new ATask<Void>(null,num, 0, func, null);
+			}
 			tasks.put("get",task);
 			executor.execute(task);
 			return "OK";
@@ -231,12 +237,21 @@ public class CommandProcessor {
 				return "RUNNING";
 			}
 			int num = Integer.parseInt(arg1);
-			ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
+			ITask task;
+			IterFunc<Void> func = new IterFunc<Void>() {
 				public Void apply(Void v, int id) {
 					region.put("" + id, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
 					return null;
 				}
-			},null);
+			};
+
+			if (arg2!=null && !arg2.isEmpty()) {
+				int split = Integer.parseInt(arg2);
+				task = new MTask<Void>(split,executor,num,func,null);
+			} else {
+				task = new ATask<Void>(null,num, 0, func, null);
+			}
+
 			tasks.put("put",task);
 			executor.execute(task);
 			return "OK";
