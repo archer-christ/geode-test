@@ -16,12 +16,9 @@
 
 package org.springframework.data.gemfire.samples.helloworld;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.stereotype.Component;
 
@@ -53,9 +50,13 @@ public class CommandProcessor {
 	boolean threadActive;
 	private Thread thread;
 	private Executor executor;
+	Region<String, String> region ;
 
-	@Resource
-	private GemfireTemplate template;
+
+
+	public void setRegion(Region<String, String> region) {
+		this.region = region;
+	}
 
 	void start() {
 		if (thread == null) {
@@ -127,123 +128,121 @@ public class CommandProcessor {
 	String process(final String line) {
 		final Scanner sc = new Scanner(line);
 
-		return template.execute(new GemfireCallback<String>() {
+		if (!sc.hasNext(COM)) {
+			return "Invalid command - type 'help' for supported operations";
+		}
+		String command = sc.next();
+		String arg1 = (sc.hasNext() ? sc.next() : null);
+		String arg2 = (sc.hasNext() ? sc.next() : null);
 
-			public String doInGemfire(Region reg) throws GemFireCheckedException, GemFireException {
-				final Region<String, String> region = reg;
-
-				if (!sc.hasNext(COM)) {
-					return "Invalid command - type 'help' for supported operations";
+		if ("cancel".equalsIgnoreCase(command)) {
+			if (arg1!=null) {
+				ATask task = tasks.get(arg1);
+				if (task!=null) {
+					tasks.remove(arg1);
+					task.cancel();
 				}
-				String command = sc.next();
-				String arg1 = (sc.hasNext() ? sc.next() : null);
-				String arg2 = (sc.hasNext() ? sc.next() : null);
-
-				if ("cancel".equalsIgnoreCase(command)) {
-					if (arg1!=null) {
-						ATask task = tasks.get(arg1);
-						if (task!=null) {
-							tasks.remove(arg1);
-							task.cancel();
-						}
-					}
-
-				}
-
-				// query shortcut
-				if ("query".equalsIgnoreCase(command)) {
-					String query = line.trim().substring(command.length());
-					return region.query(query).toString();
-				}
-
-				// parse commands w/o arguments
-				if ("exit".equalsIgnoreCase(command)) {
-					threadActive = false;
-					return "Node exiting...";
-				}
-				if ("help".equalsIgnoreCase(command)) {
-					return help;
-				}
-				if ("size".equalsIgnoreCase(command)) {
-					return EMPTY + region.size();
-				}
-				if ("clear".equalsIgnoreCase(command)) {
-					region.clear();
-					return "Clearing grid..";
-				}
-				if ("keys".equalsIgnoreCase(command)) {
-					return region.keySet().toString();
-				}
-				if ("values".equalsIgnoreCase(command)) {
-					return region.values().toString();
-				}
-
-				if ("map".equalsIgnoreCase(command)) {
-					Set<Entry<String, String>> entrySet = region.entrySet();
-					if (entrySet.size() == 0)
-						return "[]";
-
-					StringBuilder sb = new StringBuilder();
-					for (Entry<String, String> entry : entrySet) {
-						sb.append("[");
-						sb.append(entry.getKey());
-						sb.append("=");
-						sb.append(entry.getValue());
-						sb.append("] ");
-					}
-					return sb.toString();
-				}
-
-				// commands w/ 1 arg
-				if ("containsKey".equalsIgnoreCase(command)) {
-					return EMPTY + region.containsKey(arg1);
-				}
-				if ("containsValue".equalsIgnoreCase(command)) {
-					return EMPTY + region.containsValue(arg1);
-				}
-				if ("get".equalsIgnoreCase(command)) {
-					if (tasks.containsKey("get")) {
-						System.out.println("You have get task running. !!!");
-						return "RUNNING";
-					}
-					int num = Integer.parseInt(arg1);
-					ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
-						public Void apply(Void v, int id) {
-							region.get(""+id);
-							return null;
-						}
-					},null);
-					tasks.put("get",task);
-					executor.execute(task);
-					return "OK";
-//					return region.get(arg1);
-				}
-				if ("remove".equalsIgnoreCase(command)) {
-					return region.remove(arg1);
-				}
-
-				// commands w/ 2 args
-
-				if ("put".equalsIgnoreCase(command)) {
-					if (tasks.containsKey("put")) {
-						System.out.println("You have PUT task running. !!!");
-						return "RUNNING";
-					}
-					int num = Integer.parseInt(arg1);
-					ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
-						public Void apply(Void v, int id) {
-							region.put("" + id, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-							return null;
-						}
-					},null);
-					tasks.put("put",task);
-					executor.execute(task);
-					return "OK";
-				}
-
-				sc.close();
-				return "unknown command - run 'help' for available commands";
 			}
-		});
+
+		}
+
+		// query shortcut
+		if ("query".equalsIgnoreCase(command)) {
+			String query = line.trim().substring(command.length());
+			try {
+				return region.query(query).toString();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return "ERROR";
+			}
+		}
+
+		// parse commands w/o arguments
+		if ("exit".equalsIgnoreCase(command)) {
+			threadActive = false;
+			return "Node exiting...";
+		}
+		if ("help".equalsIgnoreCase(command)) {
+			return help;
+		}
+		if ("size".equalsIgnoreCase(command)) {
+			return EMPTY + region.size();
+		}
+		if ("clear".equalsIgnoreCase(command)) {
+			region.clear();
+			return "Clearing grid..";
+		}
+		if ("keys".equalsIgnoreCase(command)) {
+			return region.keySet().toString();
+		}
+		if ("values".equalsIgnoreCase(command)) {
+			return region.values().toString();
+		}
+
+		if ("map".equalsIgnoreCase(command)) {
+			Set<Entry<String, String>> entrySet = region.entrySet();
+			if (entrySet.size() == 0)
+				return "[]";
+
+			StringBuilder sb = new StringBuilder();
+			for (Entry<String, String> entry : entrySet) {
+				sb.append("[");
+				sb.append(entry.getKey());
+				sb.append("=");
+				sb.append(entry.getValue());
+				sb.append("] ");
+			}
+			return sb.toString();
+		}
+
+		// commands w/ 1 arg
+		if ("containsKey".equalsIgnoreCase(command)) {
+			return EMPTY + region.containsKey(arg1);
+		}
+		if ("containsValue".equalsIgnoreCase(command)) {
+			return EMPTY + region.containsValue(arg1);
+		}
+		if ("get".equalsIgnoreCase(command)) {
+			if (tasks.containsKey("get")) {
+				System.out.println("You have get task running. !!!");
+				return "RUNNING";
+			}
+			int num = Integer.parseInt(arg1);
+			ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
+				public Void apply(Void v, int id) {
+					region.get(""+id);
+					return null;
+				}
+			},null);
+			tasks.put("get",task);
+			executor.execute(task);
+			return "OK";
+//					return region.get(arg1);
+		}
+		if ("remove".equalsIgnoreCase(command)) {
+			return region.remove(arg1);
+		}
+
+		// commands w/ 2 args
+
+		if ("put".equalsIgnoreCase(command)) {
+			if (tasks.containsKey("put")) {
+				System.out.println("You have PUT task running. !!!");
+				return "RUNNING";
+			}
+			int num = Integer.parseInt(arg1);
+			ATask<Void> task = new ATask<Void>(num,new IterFunc<Void>(){
+				public Void apply(Void v, int id) {
+					region.put("" + id, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+					return null;
+				}
+			},null);
+			tasks.put("put",task);
+			executor.execute(task);
+			return "OK";
+		}
+
+		sc.close();
+		return "unknown command - run 'help' for available commands";
 	}
 }

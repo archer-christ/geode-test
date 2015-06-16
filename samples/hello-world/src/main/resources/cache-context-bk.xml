@@ -17,7 +17,6 @@
 
 	<gfe:pool id="my-pool" subscription-enabled="true">
 		<gfe:locator host="172.31.4.121" port="10334"/>
-		<gfe:locator host="172.31.4.122" port="10334"/>
 	</gfe:pool>
 
 	<gfe-data:datasource>

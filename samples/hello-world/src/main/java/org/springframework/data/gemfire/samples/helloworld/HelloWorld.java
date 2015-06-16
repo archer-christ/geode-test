@@ -17,6 +17,9 @@
 package org.springframework.data.gemfire.samples.helloworld;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
@@ -36,7 +39,6 @@ public class HelloWorld {
 	private static final Log log = LogFactory.getLog(HelloWorld.class);
 
 	// inject the region
-	@Resource(name = "myWorld")
 	private Region<String, String> region;
 
 	@Resource
@@ -44,10 +46,19 @@ public class HelloWorld {
 
 	@PostConstruct
 	void start() {
+		ClientCache cache = new ClientCacheFactory()
+				.addPoolLocator("172.31.4.121", 10334)
+				.addPoolLocator("172.31.4.122", 10334)
+				.create();
+
+		region = cache.<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+				.create("region");
+
 		log.info("Member " + region.getCache().getDistributedSystem().getDistributedMember().getId()
 				+ " connecting to region [" + region.getName() + "]");
 		System.out.println("Member " + region.getCache().getDistributedSystem().getDistributedMember().getId()
 				+ " connecting to region [" + region.getName() + "]");
+		processor.setRegion(region);
 		processor.start();
 	}
 
