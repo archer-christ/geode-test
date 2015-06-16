@@ -52,8 +52,8 @@ public  class MTask<R> implements ITask  {
         }
 
         long escape  = System.currentTimeMillis() - start;
-        String info = String.format("complete %d tasks with %d thread, time escape %d ms, %d tps",
-                times, tasks.size(), escape, (times*1000)/escape);
+        String info = String.format("Thread %d - complete %d tasks with %d thread, time escape %d ms, %d tps",
+                Thread.currentThread().getId(), times, tasks.size(), escape, (times*1000)/escape);
         System.out.println(info);
     }
 

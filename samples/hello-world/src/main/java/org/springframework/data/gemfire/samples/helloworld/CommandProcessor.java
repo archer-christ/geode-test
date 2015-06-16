@@ -61,7 +61,7 @@ public class CommandProcessor {
 			threadActive = true;
 			thread = new Thread(new Task(), "cmd-processor");
 			thread.start();
-			executor = Executors.newFixedThreadPool(20);
+			executor = Executors.newFixedThreadPool(50);
 		}
 	}
 

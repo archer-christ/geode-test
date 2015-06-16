@@ -32,6 +32,7 @@ public  class ATask<R> implements ITask {
     }
 
     public void run() {
+        long threadId = Thread.currentThread().getId();
         try {
             System.out.println("Start a task" + this);
             log.info("Start a task");
@@ -40,16 +41,16 @@ public  class ATask<R> implements ITask {
             final long start_time = System.currentTimeMillis();
             for (int i = 0; i < times && active; i++) {
                 r = func.apply(r, i+start);
-                if (i % 1000 == 0) {
+                if (i % 10000 == 0) {
                     long escape = System.currentTimeMillis() - start_time;
-                    String info = String.format("Run %d tasks, use %d ms, %d tps", i, escape, (i * 1000) / (escape + 1));
+                    String info = String.format("Thread %d Run %d tasks, use %d ms, %d tps", threadId, i, escape, (i * 1000) / (escape + 1));
                     log.info(info);
                     System.out.println(info);
                 }
 
             }
             long escape = System.currentTimeMillis() - start_time;
-            String info = String.format("Complete %d tasks, use %d ms, %d tps", times, escape, (times * 1000) / (escape + 1));
+            String info = String.format("Thread %d Complete %d tasks, use %d ms, %d tps", threadId, times, escape, (times * 1000) / (escape + 1));
             log.info(info);
             System.out.println(info);
         } catch(Exception e) {
