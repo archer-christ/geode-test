@@ -51,7 +51,7 @@ public class HelloWorld {
 				.addPoolLocator("172.31.4.122", 10334)
 				.create();
 
-		region = cache.<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+		region = cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
 				.create("region");
 
 		log.info("Member " + region.getCache().getDistributedSystem().getDistributedMember().getId()
