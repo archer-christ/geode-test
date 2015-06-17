@@ -99,8 +99,8 @@ dependencies {
     sharedResources "org.springframework.data.build:spring-data-build-resources:$springDataBuildVersion@zip"
 }
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 if (JavaVersion.current().isJava8Compatible()) {
     allprojects {

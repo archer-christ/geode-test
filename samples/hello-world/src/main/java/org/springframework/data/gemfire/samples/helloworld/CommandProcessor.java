@@ -108,6 +108,10 @@ public class CommandProcessor {
 		}
 	}
 
+	static boolean notEmpty(String v) {
+		return v!=null && !v.isEmpty();
+	}
+
 	private static String initHelp() {
 		try {
 			InputStream stream = CommandProcessor.class.getResourceAsStream("help.txt");
@@ -123,6 +127,7 @@ public class CommandProcessor {
 
 	HashMap<String, ITask> tasks = new HashMap<String, ITask>();
 
+	String data = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
 	String process(final String line) {
 		final Scanner sc = new Scanner(line);
 
@@ -164,6 +169,14 @@ public class CommandProcessor {
 			return help;
 		}
 		if ("size".equalsIgnoreCase(command)) {
+			if (notEmpty(arg1)) {
+				int size = Integer.parseInt(arg1);
+				char [] buf = new char[size];
+				for (int i=0;i<size;i++) {
+					buf[i] = 'a';
+				}
+				data = new String(buf);
+			}
 			return EMPTY + region.size();
 		}
 		if ("clear".equalsIgnoreCase(command)) {
@@ -238,12 +251,10 @@ public class CommandProcessor {
 			}
 			int num = Integer.parseInt(arg1);
 			ITask task;
-			IterFunc<Void> func = new IterFunc<Void>() {
-				public Void apply(Void v, int id) {
-					region.put("" + id, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-					return null;
-				}
-			};
+			IterFunc<Void> func = (v, id) -> {
+                region.put("" + id, data);
+                return null;
+            };
 
 			if (arg2!=null && !arg2.isEmpty()) {
 				int split = Integer.parseInt(arg2);
